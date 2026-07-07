@@ -9,6 +9,7 @@ datasource db {
 
 model usuario {
   id    String @id @default(auto()) @map("_id") @db.ObjectId
-  /// Field referred in an index, but found no data to define the type.
-  email Json?  @unique
+  email String  @unique
+  nome String
+  senha String
 }
