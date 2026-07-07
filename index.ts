@@ -5,6 +5,8 @@ import { autenticarUsuario, criarUsuario, getUsuario, logarUsuario } from "./con
 const app = express()
 app.use(cors())
 app.use(express.json())
+
+
 app.get("/usuario",getUsuario)
 app.post("/criarusuario",criarUsuario)
 app.post("/logarusuario",logarUsuario)
