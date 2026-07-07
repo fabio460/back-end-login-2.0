@@ -45,8 +45,9 @@ export const criarUsuario = async(req: Request, res: Response)=>{
 
 export const logarUsuario = async(req:Request, res:Response)=>{
     const {email, senha} = req.body
+
     if (!email || !senha) {
-        res.status(401).json("Dados")
+       return res.status(401).json("Dados")
     }
     try {
         const usuario = await prisma.usuario.findUnique({
@@ -54,30 +55,44 @@ export const logarUsuario = async(req:Request, res:Response)=>{
                 email
             }
         })
-        if (senha !== usuario?.senha) {
-            res.json("Usuário ou senha inválidos!")
+        if (usuario?.email !== email) {
+            return res.status(401).json("usuario não encontrado")
         }
+        const senhaValida =await bcrypt.compare(senha,usuario?.senha as string)
         
+        if (!senhaValida) {
+           return res.status(401).json("Senha inválidos!")
+        }
         const token = jwt.sign({usuario},chaveSecreta,{expiresIn:"1d"})
-        res.status(200).json(token)
+        return res.status(200).json({
+            id:usuario?.id,
+            nome:usuario?.nome,
+            email:usuario?.email,
+            token
+        })
         
     } catch (error) {
-        res.status(401).json("Falha ao fazer login!")
+        return res.status(401).json("Falha ao fazer login!")
     }
 }
 
 export const autenticarUsuario = async (req:Request, res:Response)=>{
     try {
-        const tokenString = req.headers.authorization?.split(' ')[1];
-        const token =JSON.parse(tokenString as string);
+        const token = req.headers.authorization?.split(' ')[1];
         if (!token) {
-            res.status(401).json("token inválido")
+           return res.status(401).json("token inválido")
         }
-        const tokenValido = jwt.verify(token,chaveSecreta) as string
-        res.status(200).json(jwt.decode(tokenValido))
+        jwt.verify(token,chaveSecreta) as string
+        const tokenDecodificado:any = jwt.decode(token)
+    
+        return res.status(200).json({
+            id:tokenDecodificado.usuario.id,
+            nome:tokenDecodificado.usuario.nome,
+            email:tokenDecodificado.usuario.email,
+        })
         
     } catch (error) {
-        res.status(401).json("falha na autenticação")
+        return res.status(401).json("falha na autenticação")
     }
 }
 
