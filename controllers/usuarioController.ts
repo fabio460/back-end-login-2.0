@@ -78,13 +78,8 @@ export const logarUsuario = async(req:Request, res:Response)=>{
 
 export const autenticarUsuario = async (req:Request, res:Response)=>{
     try {
-        const token = req.headers.authorization?.split(' ')[1];
-        if (!token) {
-           return res.status(401).json("token inválido")
-        }
-        jwt.verify(token,chaveSecreta) as string
+        const token = req.headers.authorization?.split(' ')[1] as string;
         const tokenDecodificado:any = jwt.decode(token)
-    
         return res.status(200).json({
             id:tokenDecodificado.usuario.id,
             nome:tokenDecodificado.usuario.nome,
@@ -93,6 +88,18 @@ export const autenticarUsuario = async (req:Request, res:Response)=>{
         
     } catch (error) {
         return res.status(401).json("falha na autenticação")
+    }
+}
+
+export const deletarUsuario = async(req:Request, res:Response)=>{
+    try {
+        const {id} = req.body
+        const response = await prisma.usuario.delete({
+            where:{id}
+        })
+        return res.status(200).json("Usuario deletado com sucesso!")
+    } catch (error) {
+        return res.status(401).json("Falha ao deletar usuario!")
     }
 }
 
